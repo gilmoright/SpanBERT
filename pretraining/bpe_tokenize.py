@@ -31,8 +31,9 @@ def tokenize(cased_lines, tokenizer, basic_tokenizer, worker_id, batch_offset):
         sents.append(split_tokens)
     return worker_id, sents, batch_offset
 
-def process(cased_file, output_file, bert_model_type='bert-base-cased', total=180378072, chunk_size=1000000, workers=40):
+def process(cased_file, output_file, bert_model_type='bert-base-cased', total=180378072, chunk_size=1000000, workers=16):  # workers 40
     results = list(range(workers))
+    results = {k:None for k in results}
     tokenizer = BertTokenizer.from_pretrained(bert_model_type)
     basic_tokenizer = BasicTokenizer(do_lower_case=False)
     fout = open(output_file, 'w')
@@ -48,11 +49,12 @@ def process(cased_file, output_file, bert_model_type='bert-base-cased', total=18
             pool.apply_async(tokenize, args = (cased_lines[start:start+size], tokenizer, basic_tokenizer, i, start), callback = merge_fn)
         pool.close()
         pool.join()
-        for lines, batch_offset in results:
+        for lines, batch_offset in results.values():
             for i, line in enumerate(lines):
                 fout.write(' '.join(line) + '\n')
         offset += len(cased_lines)
 
 
 if __name__ == '__main__':
-    process(sys.argv[1], sys.argv[2])
+    print(sys.argv)
+    process(sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]))

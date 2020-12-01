@@ -8,7 +8,7 @@
 """
 Data pre-processing: build vocabularies and binarize training data.
 """
-
+import sys
 import argparse
 from collections import Counter
 from itertools import zip_longest
@@ -249,6 +249,7 @@ def dataset_dest_file(args, output_prefix, lang, extension):
 
 
 if __name__ == '__main__':
+    print(sys.argv)
     parser = get_parser()
     args = parser.parse_args()
     main(args)

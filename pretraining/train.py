@@ -19,6 +19,8 @@ from fairseq import distributed_utils, options, progress_bar, tasks, utils
 from fairseq.data import iterators
 from fairseq.trainer import Trainer
 from fairseq.meters import AverageMeter, StopwatchMeter
+print("torch.cuda.is_available()", torch.cuda.is_available())
+print("torch.cuda.device_count()", torch.cuda.device_count())
 
 def main(args):
     dummy_batch_size = args.max_tokens
