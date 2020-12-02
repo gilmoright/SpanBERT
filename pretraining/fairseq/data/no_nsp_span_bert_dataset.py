@@ -48,6 +48,7 @@ class BlockDataset(torch.utils.data.Dataset):
         max_num_tokens = block_size - 2
         self.sents = []
         self.sizes = []
+        
 
         if break_mode == "sentence":
             curr = 0
@@ -63,6 +64,14 @@ class BlockDataset(torch.utils.data.Dataset):
                     self.sizes.append(sent[1] - sent[0] + 2)
                     if len(self.sents) <= 5:
                         print("Sentence: %s (sz = %d)" % (self.sents[-1], self.sizes[-1]))
+            # !!! Govnocode for batches equal to GPU count
+            gpu_count = 6
+            batch_size = 16
+            newDataSize = (gpu_count*batch_size) * (len(self.sizes) // (gpu_count*batch_size))
+            #ds.size = newDataSize
+            self.sizes = self.sizes[:newDataSize]
+            self.sents = self.sents[:newDataSize]
+            
         elif break_mode == "doc":
             curr = 0
             cur_doc = []

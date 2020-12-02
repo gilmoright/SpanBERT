@@ -155,7 +155,15 @@ def all_gather_list(data, group=None, max_size=16384):
         out_buffer = buffer[i * max_size : (i + 1) * max_size]
         size = (255 * utils.item(out_buffer[0])) + utils.item(out_buffer[1])
         if size > 0:
+            print()
+            try:
+                unpickled = pickle.loads(bytes(out_buffer[2:size+2].tolist()))
+            except Exception as e:
+                print(out_buffer[2:size+2])
+                print(out_buffer[2:size+2].tolist())
+                print(bytes(out_buffer[2:size+2].tolist()))
+                raise e
             result.append(
-                pickle.loads(bytes(out_buffer[2:size+2].tolist()))
+                unpickled
             )
     return result
