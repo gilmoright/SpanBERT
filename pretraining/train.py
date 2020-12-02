@@ -14,6 +14,7 @@ import itertools
 import os
 import math
 import torch
+#import wandb
 
 from fairseq import distributed_utils, options, progress_bar, tasks, utils
 from fairseq.data import iterators
@@ -27,8 +28,7 @@ def main(args):
     if args.max_tokens is None:
         args.max_tokens = 4096
         dummy_batch_size = 1024
-    print(args)
-
+    #wandb.init(config=args, project="SbanBert", name="Try_1")
     if not torch.cuda.is_available():
         raise NotImplementedError('Training on CPU is not supported')
     torch.cuda.set_device(args.device_id)
@@ -53,7 +53,6 @@ def main(args):
         model.max_positions(),
     )
     dummy_batch = task.dataset('train').get_dummy_batch(args.max_tokens, max_positions)
-
     # Build trainer
     trainer = Trainer(args, task, model, criterion, dummy_batch)
     print('| training on {} GPUs'.format(args.distributed_world_size))
@@ -74,7 +73,6 @@ def main(args):
         num_shards=args.distributed_world_size,
         shard_id=args.distributed_rank,
     )
-
     # Load the latest checkpoint if one is available
     if not load_checkpoint(args, trainer, epoch_itr):
         trainer.dummy_train_step([dummy_batch])
@@ -90,7 +88,6 @@ def main(args):
     while lr > args.min_lr  and trainer.get_num_updates() < max_update:
         # train for one epoch
         train(args, trainer, task, epoch_itr)
-
         if epoch_itr.epoch % args.validate_interval == 0:
             valid_losses = validate(args, trainer, task, epoch_itr, valid_subsets)
         # only use first validation loss to update the learning rate
@@ -124,6 +121,7 @@ def train(args, trainer, task, epoch_itr):
     first_valid = args.valid_subset.split(',')[0]
     max_update = args.max_update or math.inf
     num_batches = len(epoch_itr)
+    print("Start cycle",progress, epoch_itr.iterations_in_epoch)
     for i, samples in enumerate(progress, start=epoch_itr.iterations_in_epoch):
         log_output = trainer.train_step(samples)
         if log_output is None:
@@ -131,6 +129,8 @@ def train(args, trainer, task, epoch_itr):
 
         # log mid-epoch stats
         stats = get_training_stats(trainer)
+        #wandb.log(log_output, step=epoch_itr.epoch)   
+        #wandb.log(extra_meters, step=epoch_itr.epoch)  
         for k, v in log_output.items():
             if k in ['loss', 'nll_loss', 'ntokens', 'nsentences', 'sample_size']:
                 continue  # these are already logged above
@@ -152,6 +152,7 @@ def train(args, trainer, task, epoch_itr):
 
         if num_updates >= max_update:
             break
+    print("End cycle")
 
     # log end-of-epoch stats
     stats = get_training_stats(trainer)

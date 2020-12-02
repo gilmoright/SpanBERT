@@ -99,7 +99,6 @@ def parse_args_and_arch(parser, input_args=None, parse_known=False):
     else:
         args = parser.parse_args(input_args)
         extra = None
-
     # Post-process args.
     if hasattr(args, 'lr'):
         args.lr = eval_str_list(args.lr, type=float)
@@ -107,11 +106,10 @@ def parse_args_and_arch(parser, input_args=None, parse_known=False):
         args.update_freq = eval_str_list(args.update_freq, type=int)
     if hasattr(args, 'max_sentences_valid') and args.max_sentences_valid is None:
         args.max_sentences_valid = args.max_sentences
-
     # Apply architecture configuration.
     if hasattr(args, 'arch'):
         ARCH_CONFIG_REGISTRY[args.arch](args)
-
+    print(args.config)
     if parse_known:
         return args, extra
     else:

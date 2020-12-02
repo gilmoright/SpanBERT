@@ -91,7 +91,8 @@ class SpanBertTask(FairseqTask):
                                  ' per sample for BERT dataset')
         parser.add_argument('--raw-text', default=False, action='store_true',
                             help='load raw text dataset')
-        parser.add_argument('--break-mode', default="doc", type=str, help='mode for breaking sentence')
+        #parser.add_argument('--break-mode', default="doc", type=str, help='mode for breaking sentence')
+        parser.add_argument('--break-mode', default="sentence", type=str, help='mode for breaking sentence')
         parser.add_argument('--schemes', default='["random"]', type=str, help='list of masking schemes')
         parser.add_argument('--span-lower', default=1, type=int, help='lower bound on the number of words in a span')
         parser.add_argument('--span-upper', default=10, type=int, help='upper bound on the number of words in a span')
@@ -150,7 +151,7 @@ class SpanBertTask(FairseqTask):
                 tokens = [t for l in ds.tokens_list for t in l]
             elif not self.args.raw_text and IndexedInMemoryDataset.exists(path):
                 ds = IndexedInMemoryDataset(path, fix_lua_indexing=False)
-                tokens = ds.buffer
+                tokens = ds.buffer                
             else:
                 if k > 0:
                     break
@@ -158,8 +159,11 @@ class SpanBertTask(FairseqTask):
                     raise FileNotFoundError('Dataset not found: {} ({})'.format(split, self.args.data))
             tag_map = None
             if self.args.tag_bitmap_file_prefix is not None:
+                print("self.args.tag_bitmap_file_prefix is not None")
                 tag_map = bitarray()
                 tag_map.fromfile(open(self.args.tag_bitmap_file_prefix + split, 'rb'))
+
+            
             block_cls = BlockPairDataset if not self.no_nsp else BlockDataset
             with data_utils.numpy_seed(self.seed + k):
                 loaded_datasets.append(
@@ -177,11 +181,11 @@ class SpanBertTask(FairseqTask):
 
                     ))
 
+            
             print('| {} {} {} examples'.format(self.args.data, split_k, len(loaded_datasets[-1])))
 
             if not combine:
                 break
-
         if len(loaded_datasets) == 1:
             dataset = loaded_datasets[0]
             sizes = dataset.sizes

@@ -746,7 +746,7 @@ def cased_base_bert_architecture(args):
 @register_model_architecture('bert_pair', 'cased_bert_pair_large')
 def cased_large_bert_architecture(args):
     args.config = BertConfig()
-    args.config.vocab_size = 28996
+    args.config.vocab_size = 119547#28996
     args.config.hidden_size = getattr(args, 'hidden_size', 1024)
     args.config.num_hidden_layers = getattr(args, 'num_hidden_layers', 24)
     args.config.num_attention_heads = getattr(args, 'num_attention_heads', 16)
